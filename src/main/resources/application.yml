@@ -1,5 +1,9 @@
-spring.data.mongodb:
-    host: localhost
-    port: 27017
-    database: pautaDeVotacao
- 
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: pautaDeVotacao
+  mvc:
+    locale: en_US
+
