@@ -6,7 +6,6 @@ import com.voting_agenda.service.AgendaService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -16,7 +15,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 @RequestMapping("/agenda")
-@Controller
+@RestController
 public class AgendaController {
     private AgendaService agendaService;
     private ModelMapper defaultModelMapper;
