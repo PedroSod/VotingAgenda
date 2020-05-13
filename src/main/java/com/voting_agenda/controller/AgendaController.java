@@ -26,7 +26,7 @@ public class AgendaController {
     }
 
     @PostMapping
-    public ResponseEntity criarPauta(@Validated @RequestBody AgendaDTO agendaDTO) {
+    public ResponseEntity createAgenda(@Validated @RequestBody AgendaDTO agendaDTO) {
         Agenda agenda = defaultModelMapper.map(agendaDTO, Agenda.class);
         String id = agendaService.save(agenda).getId();
         URI location = UriComponentsBuilder.fromUriString("agenda")

@@ -17,8 +17,6 @@ public class Agenda implements Serializable {
     private static final long serialVersionUID = 8827127855599510984L;
     @Id
     private String id;
-    private String description;
     private String title;
-
-
+    private String description;
 }

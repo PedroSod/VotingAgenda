@@ -1,5 +1,6 @@
 package com.voting_agenda.service;
 
+import com.voting_agenda.exception.RecordNotFoundException;
 import com.voting_agenda.model.Agenda;
 import com.voting_agenda.repository.AgendaRepository;
 import org.springframework.stereotype.Service;
@@ -9,7 +10,7 @@ import java.util.Collection;
 @Service
 public class AgendaService {
 
-    private AgendaRepository agendaRepository;
+    private final AgendaRepository agendaRepository;
 
     public AgendaService(AgendaRepository agendaRepository) {
         this.agendaRepository = agendaRepository;
@@ -20,7 +21,7 @@ public class AgendaService {
     }
 
     public Agenda findById(String id) {
-        return agendaRepository.findById(id).orElseThrow();
+        return agendaRepository.findById(id).orElseThrow(() -> new RecordNotFoundException(id));
     }
 
     public Collection<Agenda> findAll() {
@@ -32,7 +33,7 @@ public class AgendaService {
     }
 
     public void update(String id, Agenda agendaUpdate) {
-        agendaRepository.findById(id).orElseThrow();
+        agendaRepository.findById(id).orElseThrow(() -> new RecordNotFoundException(id));
         agendaUpdate.setId(id);
         agendaRepository.save(agendaUpdate);
     }
