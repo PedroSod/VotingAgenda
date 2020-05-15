@@ -3,7 +3,7 @@ spring:
     mongodb:
       host: localhost
       port: 27017
-      database: pautaDeVotacao
+      database: votingAgenda
   mvc:
     locale: en_US
 

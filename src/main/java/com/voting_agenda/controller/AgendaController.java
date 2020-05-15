@@ -1,6 +1,7 @@
 package com.voting_agenda.controller;
 
-import com.voting_agenda.DTO.AgendaDTO;
+import com.voting_agenda.DTO.AgendaInputDTO;
+import com.voting_agenda.DTO.AgendaOutputDTO;
 import com.voting_agenda.model.Agenda;
 import com.voting_agenda.service.AgendaService;
 import org.modelmapper.ModelMapper;
@@ -26,7 +27,7 @@ public class AgendaController {
     }
 
     @PostMapping
-    public ResponseEntity createAgenda(@Validated @RequestBody AgendaDTO agendaDTO) {
+    public ResponseEntity createAgenda(@Validated @RequestBody AgendaInputDTO agendaDTO) {
         Agenda agenda = defaultModelMapper.map(agendaDTO, Agenda.class);
         String id = agendaService.save(agenda).getId();
         URI location = UriComponentsBuilder.fromUriString("agenda")
@@ -35,22 +36,22 @@ public class AgendaController {
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<AgendaDTO> getPautaById(@PathVariable String id) {
-        AgendaDTO agendaDTO = defaultModelMapper.map(agendaService.findById(id), AgendaDTO.class);
+    public ResponseEntity<AgendaInputDTO> getAgendaById(@PathVariable String id) {
+        AgendaOutputDTO agendaDTO = defaultModelMapper.map(agendaService.findById(id), AgendaOutputDTO.class);
         return ResponseEntity.ok(agendaDTO);
     }
 
     @GetMapping
-    public ResponseEntity<Collection<AgendaDTO>> getAll() {
+    public ResponseEntity<Collection<AgendaInputDTO>> getAll() {
         Collection<Agenda> todasPautas = agendaService.findAll();
-        Collection<AgendaDTO> todasPautasDTO = todasPautas.stream().map(
-                agenda -> defaultModelMapper.map(agenda, AgendaDTO.class)).collect(Collectors.toList());
+        Collection<AgendaInputDTO> todasPautasDTO = todasPautas.stream().map(
+                agenda -> defaultModelMapper.map(agenda, AgendaInputDTO.class)).collect(Collectors.toList());
         return ResponseEntity.ok(todasPautasDTO);
     }
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void update(@PathVariable String id, @Validated @RequestBody AgendaDTO agendaDTO) {
+    public void update(@PathVariable String id, @Validated @RequestBody AgendaInputDTO agendaDTO) {
         Agenda agenda = defaultModelMapper.map(agendaDTO, Agenda.class);
         agendaService.update(id, agenda);
     }

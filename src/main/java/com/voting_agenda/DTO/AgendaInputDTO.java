@@ -10,11 +10,10 @@ import java.io.Serializable;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class AgendaDTO implements Serializable {
+public class AgendaInputDTO implements Serializable {
 
 	private static final long serialVersionUID = 3184317326177799715L;
-	private String id;
-	private String description;
     @NotBlank
     private String title;
+	private String description;
 }
