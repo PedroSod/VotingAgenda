@@ -39,7 +39,7 @@ public class AgendaService {
     public void update(String id, Agenda agendaUpdate) {
         agendaRepository.findById(id).orElseThrow(() -> new RecordNotFoundException(id));
         if (votingSessionService.existsByAgendaId(id)) {
-            new BadRequestException("Unable to update agenda that with voting session started.");
+            throw new BadRequestException("Unable to update agenda that with voting session started.");
         }
         agendaUpdate.setId(id);
         agendaRepository.save(agendaUpdate);

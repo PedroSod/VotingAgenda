@@ -1,5 +1,6 @@
 package com.voting_agenda.service;
 
+import com.voting_agenda.exception.BadRequestException;
 import com.voting_agenda.exception.RecordNotFoundException;
 import com.voting_agenda.model.Agenda;
 import com.voting_agenda.repository.AgendaRepository;
@@ -24,7 +25,8 @@ public class AgendaServiceTest {
 
     @Mock
     AgendaRepository agendaRepository;
-
+    @Mock
+    VotingSessionService votingSessionService;
     @InjectMocks
     AgendaService agendaService;
 
@@ -38,19 +40,19 @@ public class AgendaServiceTest {
 
     @Test
     public void save() {
-        when(agendaRepository.save(agendaMock)).thenReturn(agendaMock);
+        when(agendaRepository.save(eq(agendaMock))).thenReturn(agendaMock);
         Agenda agendaReturned = agendaService.save(agendaMock);
         assertEquals(agendaMock, agendaReturned);
-        verify(agendaRepository).save(agendaMock);
+        verify(agendaRepository).save(eq(agendaMock));
     }
 
     @Test
     public void findById() {
         Optional<Agenda> optionalMock = Optional.ofNullable(agendaMock);
-        when(agendaRepository.findById(agendaMock.getId())).thenReturn(optionalMock);
+        when(agendaRepository.findById(eq(agendaMock.getId()))).thenReturn(optionalMock);
         Agenda agendaReturned = agendaService.findById(agendaMock.getId());
         assertEquals(agendaMock, agendaReturned);
-        verify(agendaRepository).findById(agendaMock.getId());
+        verify(agendaRepository).findById(eq(agendaMock.getId()));
     }
 
     @Test
@@ -71,26 +73,37 @@ public class AgendaServiceTest {
     @Test
     public void delete() {
         Optional<Agenda> optionalMock = Optional.ofNullable(agendaMock);
-        when(agendaRepository.findById(agendaMock.getId())).thenReturn(optionalMock);
-        doNothing().when(agendaRepository).deleteById(agendaMock.getId());
+        when(agendaRepository.findById(eq(agendaMock.getId()))).thenReturn(optionalMock);
+        doNothing().when(agendaRepository).deleteById(eq(agendaMock.getId()));
+        doNothing().when(votingSessionService).deleteByAgendaId(eq(agendaMock.getId()));
         agendaService.delete(agendaMock.getId());
-        verify(agendaRepository).deleteById(agendaMock.getId());
-        verify(agendaRepository).deleteById(agendaMock.getId());
+        verify(agendaRepository).deleteById(eq(agendaMock.getId()));
+        verify(agendaRepository).deleteById(eq(agendaMock.getId()));
+        verify(votingSessionService).deleteByAgendaId(eq(agendaMock.getId()));
     }
 
     @Test
     public void update() {
         Optional<Agenda> optionalMock = Optional.ofNullable(agendaMock);
         Agenda agendaToUpdate = new Agenda(agendaMock.getId(), "update", "updated");
-        when(agendaRepository.findById(agendaMock.getId())).thenReturn(optionalMock);
-        when(agendaRepository.save(agendaToUpdate)).thenReturn(agendaToUpdate);
+        when(agendaRepository.findById(eq(agendaMock.getId()))).thenReturn(optionalMock);
+        when(agendaRepository.save(eq(agendaToUpdate))).thenReturn(agendaToUpdate);
+        when(votingSessionService.existsByAgendaId(eq(agendaMock.getId()))).thenReturn(false);
         agendaService.update(agendaMock.getId(), agendaToUpdate);
-        verify(agendaRepository).findById(agendaMock.getId());
-        verify(agendaRepository).save(agendaToUpdate);
+        verify(agendaRepository).findById(eq(agendaMock.getId()));
+        verify(agendaRepository).save(eq(agendaToUpdate));
     }
     @Test
     public void updateNotFound() {
         assertThrows(RecordNotFoundException.class, () ->
                 agendaService.update(agendaMock.getId(), agendaMock), "No record found for id : " + agendaMock.getId());
+    }
+    @Test
+    public void updateBadRequestException() {
+        Optional<Agenda> optionalMock = Optional.ofNullable(agendaMock);
+        when(agendaRepository.findById(eq(agendaMock.getId()))).thenReturn(optionalMock);
+        when(votingSessionService.existsByAgendaId(eq(agendaMock.getId()))).thenReturn(true);
+        assertThrows(BadRequestException.class, () ->
+                agendaService.update(agendaMock.getId(), agendaMock), "Unable to update agenda that with voting session started.");
     }
 }
