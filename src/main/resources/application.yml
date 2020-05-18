@@ -6,4 +6,6 @@ spring:
       database: votingAgenda
   mvc:
     locale: en_US
-
+logging:
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG

@@ -2,7 +2,7 @@ package com.voting_agenda.enums;
 
 public enum VotingOption {
 
-    YES("sim"), NO("não");
+    YES("yes"), NO("no");
 
     private String description;
 

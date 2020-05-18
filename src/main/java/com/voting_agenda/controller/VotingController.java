@@ -4,6 +4,7 @@ import com.voting_agenda.DTO.VoteDTO;
 import com.voting_agenda.business.SessionVoteBusiness;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,7 @@ public class VotingController {
     }
 
     @PostMapping("/vote")
-    public ResponseEntity createSession(@Validated  @RequestBody VoteDTO voteDTO) throws Exception {
+    public ResponseEntity createSession(@Validated  @RequestBody VoteDTO voteDTO,  BindingResult errors) throws Exception {
        sessionVoteBusiness.toVote(voteDTO);
         return ResponseEntity.ok().build();
     }

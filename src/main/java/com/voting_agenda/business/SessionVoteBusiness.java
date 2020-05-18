@@ -1,7 +1,11 @@
 package com.voting_agenda.business;
 
 import com.voting_agenda.DTO.VoteDTO;
+import com.voting_agenda.DTO.VotingResultDTO;
 import com.voting_agenda.DTO.VotingSessionInputDTO;
+import com.voting_agenda.enums.VotingOption;
+import com.voting_agenda.exception.DuplicateVoteException;
+import com.voting_agenda.exception.VotingClosedException;
 import com.voting_agenda.model.Agenda;
 import com.voting_agenda.model.SessionVotes;
 import com.voting_agenda.model.Vote;
@@ -11,12 +15,14 @@ import com.voting_agenda.service.SessionVotesService;
 import com.voting_agenda.service.VotingSessionService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
+
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 
 @Service
 public class SessionVoteBusiness {
@@ -39,7 +45,7 @@ public class SessionVoteBusiness {
         Agenda agenda = agendaService.findById(votingSessionInputDTO.getAgendaId());
         votingSession.setAgenda(agenda);
         String idVotingSession = votingSessionService.save(votingSession).getId();
-        sessionVotesService.save(new SessionVotes(votingSession, null));
+        sessionVotesService.save(new SessionVotes(null, votingSession, null));
         return idVotingSession;
     }
 
@@ -59,18 +65,29 @@ public class SessionVoteBusiness {
     public void toVote(VoteDTO voteDTO) throws Exception {
         Vote vote = defaultModelMapper.map(voteDTO, Vote.class);
 
-        if (sessionVotesService.existsByIdAndAllSessionVotesCpf(voteDTO.getVotingSessionId(), vote.getCpf())) {
-            throw new Exception();
+        if (sessionVotesService.existsByIdAndAllSessionVotesCpf(voteDTO.getAgendaId(), vote.getCpf())) {
+            throw new DuplicateVoteException(vote.getCpf());
         }
-        SessionVotes sessionVotes = sessionVotesService.findAllBySessionId(voteDTO.getVotingSessionId());
-        Collection<Vote> allSessionVotes =
-                sessionVotes.getAllSessionVotes();
-        if(CollectionUtils.isEmpty(allSessionVotes)){
-            allSessionVotes = new ArrayList<Vote>();
-        }
-        allSessionVotes.add(vote);
-        sessionVotes.setAllSessionVotes(allSessionVotes);
-        sessionVotesService.update(sessionVotes);
+        checkSessionVoteTime(voteDTO.getAgendaId());
+        sessionVotesService.pushVote(voteDTO.getAgendaId(), vote);
     }
 
+    private void checkSessionVoteTime(String votingSessionId) {
+        if (votingSessionService.findEndTime(votingSessionId).isBefore(LocalDateTime.now())) {
+            throw new VotingClosedException(votingSessionId);
+        }
+    }
+
+    public VotingResultDTO getVotingResult(String agendaId) {
+        Collection<Vote> votes = sessionVotesService.countByVotingSessionAgendaId(agendaId);
+        Map<VotingOption, Long> map = votes.stream().collect(groupingBy(Vote::getVotingOption, counting()));
+        return new VotingResultDTO(
+                nullValidation(map.get(VotingOption.YES)),
+                nullValidation(map.get(VotingOption.NO)),
+                Long.valueOf(votes.size()));
+    }
+
+    private Long nullValidation(Long value) {
+        return Objects.isNull(value) ? 0L : value;
+    }
 }

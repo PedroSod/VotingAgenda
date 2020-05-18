@@ -5,17 +5,19 @@ import com.voting_agenda.model.SessionVotes;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.Optional;
 
 @Repository
-public interface SessionVotesRepository extends MongoRepository<SessionVotes, String> {
+public interface SessionVotesRepository extends MongoRepository<SessionVotes, String>, CustomSessionVotesRepository {
 
-    Optional<SessionVotes> findByVotingSessionId(String idVotingSession);
 
-    void deleteByVotingSessionId(String idVotingSession);
+    void deleteByVotingSessionId(String votingSessionId);
 
-    Collection<SessionVotes> findAllByVotingSessionAgendaId(String agendaId);
+    void deleteByVotingSessionAgendaId(String AgendaId);
+
+
+    Optional<SessionVotes> findByVotingSessionAgendaId(String agendaId);
 
     boolean existsByVotingSessionIdAndAllSessionVotesCpf(String id, String cpf);
+
 }

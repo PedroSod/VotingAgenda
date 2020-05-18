@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 public class VotingSession implements Serializable {
 
-	private static final long serialVersionUID = 1777612561801338066L;
-	@Id
+    private static final long serialVersionUID = 1777612561801338066L;
+    @Id
     private String id;
     private Agenda agenda;
     private LocalDateTime start;

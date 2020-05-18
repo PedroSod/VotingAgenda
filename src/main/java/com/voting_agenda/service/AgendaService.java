@@ -4,7 +4,6 @@ import com.voting_agenda.exception.BadRequestException;
 import com.voting_agenda.exception.RecordNotFoundException;
 import com.voting_agenda.model.Agenda;
 import com.voting_agenda.repository.AgendaRepository;
-import com.voting_agenda.repository.VotingSessionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -13,11 +12,11 @@ import java.util.Collection;
 public class AgendaService {
 
     private final AgendaRepository agendaRepository;
-    private final VotingSessionRepository votingSessionRepository;
+    private final VotingSessionService votingSessionService;
 
-    public AgendaService(AgendaRepository agendaRepository, VotingSessionRepository votingSessionRepository) {
+    public AgendaService(AgendaRepository agendaRepository, VotingSessionService votingSessionService) {
         this.agendaRepository = agendaRepository;
-        this.votingSessionRepository = votingSessionRepository;
+        this.votingSessionService = votingSessionService;
     }
 
     public Agenda save(Agenda agenda) {
@@ -34,14 +33,14 @@ public class AgendaService {
 
     public void delete(String id) {
         agendaRepository.deleteById(id);
-        votingSessionRepository.deleteByAgendaId(id);
+        votingSessionService.deleteByAgendaId(id);
     }
 
     public void update(String id, Agenda agendaUpdate) {
         agendaRepository.findById(id).orElseThrow(() -> new RecordNotFoundException(id));
-        votingSessionRepository.findByAgenda(agendaUpdate).
-                orElseThrow(() ->
-                        new BadRequestException("Unable to update agenda that with voting session started."));
+        if (votingSessionService.existsByAgendaId(id)) {
+            new BadRequestException("Unable to update agenda that with voting session started.");
+        }
         agendaUpdate.setId(id);
         agendaRepository.save(agendaUpdate);
     }

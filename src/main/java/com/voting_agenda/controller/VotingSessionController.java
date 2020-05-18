@@ -16,13 +16,11 @@ import java.net.URI;
 @RequestMapping("/votingSession")
 @RestController
 public class VotingSessionController {
-    private AgendaService agendaService;
     private ModelMapper defaultModelMapper;
     private VotingSessionService votingSessionService;
     private SessionVoteBusiness sessionVoteBusiness;
 
-    public VotingSessionController(AgendaService agendaService, ModelMapper defaultModelMapper, VotingSessionService votingSessionService, SessionVoteBusiness sessionVoteBusiness) {
-        this.agendaService = agendaService;
+    public VotingSessionController( ModelMapper defaultModelMapper, VotingSessionService votingSessionService, SessionVoteBusiness sessionVoteBusiness) {
         this.defaultModelMapper = defaultModelMapper;
         this.votingSessionService = votingSessionService;
         this.sessionVoteBusiness = sessionVoteBusiness;
@@ -47,6 +45,6 @@ public class VotingSessionController {
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String id) {
-        agendaService.delete(id);
+        votingSessionService.delete(id);
     }
 }

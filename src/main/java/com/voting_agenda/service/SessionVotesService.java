@@ -2,10 +2,12 @@ package com.voting_agenda.service;
 
 import com.voting_agenda.exception.RecordNotFoundException;
 import com.voting_agenda.model.SessionVotes;
+import com.voting_agenda.model.Vote;
 import com.voting_agenda.repository.SessionVotesRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+
 @Service
 public class SessionVotesService {
 
@@ -19,23 +21,26 @@ public class SessionVotesService {
         return sessionVotesRepository.save(sessionVotes);
     }
 
-    public Collection<SessionVotes> findAll() {
-        return sessionVotesRepository.findAll();
+    public void pushVote(String id, Vote vote) {
+        sessionVotesRepository.pushVote(id, vote);
     }
 
-//    public Collection<SessionVotes> findAllByAgendaId(String agendaId) {
-//        return sessionVotesRepository.findAllByAgendaId(agendaId);
-//    }
-
-    public SessionVotes findAllBySessionId(String votingSessionId) {
-        return sessionVotesRepository.findByVotingSessionId(votingSessionId)
-                .orElseThrow(() -> new RecordNotFoundException(votingSessionId));
-
-    }
-    public void update(SessionVotes sessionVotes) {
-        sessionVotesRepository.save(sessionVotes);
-    }
-    public boolean existsByIdAndAllSessionVotesCpf(String id, String cpf){
+    public boolean existsByIdAndAllSessionVotesCpf(String id, String cpf) {
         return sessionVotesRepository.existsByVotingSessionIdAndAllSessionVotesCpf(id, cpf);
+    }
+
+    public Collection<Vote> countByVotingSessionAgendaId(String agendaId) {
+        SessionVotes sessionVotes = sessionVotesRepository.findByVotingSessionAgendaId(agendaId).
+                orElseThrow(() -> new RecordNotFoundException(agendaId));
+        return sessionVotes.getAllSessionVotes();
+    }
+
+    public void deleteByVotingSessionId(String votionSessionId) {
+        sessionVotesRepository.deleteByVotingSessionId(votionSessionId);
+    }
+
+    public void deleteByVotingSessionAgendaId(String agendaId) {
+        sessionVotesRepository.deleteByVotingSessionAgendaId(agendaId);
+
     }
 }

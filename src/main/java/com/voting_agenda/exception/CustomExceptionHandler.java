@@ -1,6 +1,7 @@
 package com.voting_agenda.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,8 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        return new ResponseEntity<>(new ErrorResponse(status, "Some payload attribute has the wrong type"), HttpStatus.BAD_REQUEST);
+        String msg =  ExceptionUtils.getRootCauseMessage(ex.getMostSpecificCause()).split("\n")[0];
+        return new ResponseEntity<>(new ErrorResponse(status, msg), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RecordNotFoundException.class)
@@ -37,8 +39,20 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public final ResponseEntity<ErrorResponse> handleRecordNotFoundException(BadRequestException ex, WebRequest request) {
-        ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND, ex.getLocalizedMessage());
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DuplicateVoteException.class)
+    public final ResponseEntity<ErrorResponse> handleRecordNotFoundException(DuplicateVoteException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(HttpStatus.CONFLICT, ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(VotingClosedException.class)
+    public final ResponseEntity<ErrorResponse> handleRecordNotFoundException(VotingClosedException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
 }

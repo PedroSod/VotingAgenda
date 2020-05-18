@@ -2,21 +2,20 @@ package com.voting_agenda.service;
 
 import com.voting_agenda.exception.RecordNotFoundException;
 import com.voting_agenda.model.VotingSession;
-import com.voting_agenda.repository.SessionVotesRepository;
 import com.voting_agenda.repository.VotingSessionRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.time.LocalDateTime;
 
 @Service
 public class VotingSessionService {
 
     private VotingSessionRepository votingSessionRepository;
-    private SessionVotesRepository sessionVotesRepository;
+    private SessionVotesService sessionVotesService;
 
-    public VotingSessionService(VotingSessionRepository votingSessionRepository, SessionVotesRepository sessionVotesRepository) {
+    public VotingSessionService(VotingSessionRepository votingSessionRepository, SessionVotesService sessionVotesRepository) {
         this.votingSessionRepository = votingSessionRepository;
-        this.sessionVotesRepository = sessionVotesRepository;
+        this.sessionVotesService = sessionVotesRepository;
     }
 
     public VotingSession save(VotingSession agenda) {
@@ -27,14 +26,23 @@ public class VotingSessionService {
         return votingSessionRepository.findById(id).orElseThrow(() -> new RecordNotFoundException(id));
     }
 
-    public Collection<VotingSession> findAll() {
-        return votingSessionRepository.findAll();
+    public LocalDateTime findEndTime(String id) {
+        VotingSession votingSession = votingSessionRepository.findEndById(id).orElseThrow(() -> new RecordNotFoundException(id));
+        return votingSession.getEnd();
     }
 
-//    public void delete(String id) {
-//        votingSessionRepository.deleteById(id);
-//        sessionVotesRepository.deleteByVotingSessionId(id);
-//    }
+    public void delete(String id) {
+        votingSessionRepository.deleteById(id);
+        sessionVotesService.deleteByVotingSessionId(id);
+    }
 
 
+    public void deleteByAgendaId(String id) {
+        votingSessionRepository.deleteByAgendaId(id);
+        sessionVotesService.deleteByVotingSessionAgendaId(id);
+    }
+
+    public boolean existsByAgendaId(String id) {
+        return votingSessionRepository.existsByAgendaId(id);
+    }
 }
