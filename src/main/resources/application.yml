@@ -9,3 +9,5 @@ spring:
 logging:
   level:
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+cpf-consult:
+  url: https://user-info.herokuapp.com/users/
