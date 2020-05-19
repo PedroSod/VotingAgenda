@@ -18,16 +18,18 @@ public class VotingSessionService {
         this.sessionVotesService = sessionVotesRepository;
     }
 
-    public VotingSession save(VotingSession agenda) {
-        return votingSessionRepository.save(agenda);
+    public VotingSession save(VotingSession votingSession) {
+        return votingSessionRepository.save(votingSession);
     }
 
     public VotingSession findById(String id) {
-        return votingSessionRepository.findById(id).orElseThrow(() -> new RecordNotFoundException(id));
+        return votingSessionRepository.findById(id).
+                orElseThrow(() -> new RecordNotFoundException(id));
     }
 
     public LocalDateTime findEndTime(String id) {
-        VotingSession votingSession = votingSessionRepository.findEndById(id).orElseThrow(() -> new RecordNotFoundException(id));
+        VotingSession votingSession = votingSessionRepository.findEndById(id).
+                orElseThrow(() -> new RecordNotFoundException(id));
         return votingSession.getEnd();
     }
 

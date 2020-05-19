@@ -16,10 +16,10 @@ public class CustomSessionVotesRepositoryImpl implements CustomSessionVotesRepos
     }
 
     @Override
-    public void pushVote(String id, Vote vote) {
+    public void pushVote(String agendaId, Vote vote) {
 
         mongoTemplate.updateFirst(
-                Query.query(Criteria.where("votingSession.agenda._id").is(new ObjectId(id))),
+                Query.query(Criteria.where("votingSession.agenda._id").is(new ObjectId(agendaId))),
                 new Update().addToSet("allSessionVotes", vote), "sessionVotes");
     }
 }

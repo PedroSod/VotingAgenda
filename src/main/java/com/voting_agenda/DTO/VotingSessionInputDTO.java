@@ -1,15 +1,16 @@
 package com.voting_agenda.DTO;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
+@Builder
 public class VotingSessionInputDTO implements Serializable {
 
 

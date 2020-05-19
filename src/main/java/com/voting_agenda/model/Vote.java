@@ -2,16 +2,17 @@ package com.voting_agenda.model;
 
 
 import com.voting_agenda.enums.VotingOption;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.br.CPF;
 
 import java.io.Serializable;
 
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
+@Builder
 public class Vote implements Serializable {
 
 

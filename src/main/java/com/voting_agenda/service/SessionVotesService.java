@@ -21,22 +21,22 @@ public class SessionVotesService {
         return sessionVotesRepository.save(sessionVotes);
     }
 
-    public void pushVote(String id, Vote vote) {
-        sessionVotesRepository.pushVote(id, vote);
+    public void pushVote(String agendaId, Vote vote) {
+        sessionVotesRepository.pushVote(agendaId, vote);
     }
 
     public boolean existsByIdAndAllSessionVotesCpf(String id, String cpf) {
         return sessionVotesRepository.existsByVotingSessionIdAndAllSessionVotesCpf(id, cpf);
     }
 
-    public Collection<Vote> countByVotingSessionAgendaId(String agendaId) {
+    public Collection<Vote> findVotesByAgendaId(String agendaId) {
         SessionVotes sessionVotes = sessionVotesRepository.findByVotingSessionAgendaId(agendaId).
                 orElseThrow(() -> new RecordNotFoundException(agendaId));
         return sessionVotes.getAllSessionVotes();
     }
 
-    public void deleteByVotingSessionId(String votionSessionId) {
-        sessionVotesRepository.deleteByVotingSessionId(votionSessionId);
+    public void deleteByVotingSessionId(String votingSessionId) {
+        sessionVotesRepository.deleteByVotingSessionId(votingSessionId);
     }
 
     public void deleteByVotingSessionAgendaId(String agendaId) {

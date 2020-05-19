@@ -1,16 +1,17 @@
 package com.voting_agenda.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
+@Builder
 public class VotingSession implements Serializable {
 
     private static final long serialVersionUID = 1777612561801338066L;
