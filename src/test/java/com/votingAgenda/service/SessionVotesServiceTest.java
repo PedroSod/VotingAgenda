@@ -14,8 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -33,7 +32,7 @@ public class SessionVotesServiceTest {
     @InjectMocks
     private SessionVotesService sessionVotesService;
 
-    private static String TEST_ID = "testId";
+    private static final String TEST_ID = "testId";
     private static SessionVotes sessionVotesMock;
     private static Vote vote;
 
@@ -106,8 +105,8 @@ public class SessionVotesServiceTest {
         return new VotingSession().builder()
                 .id(TEST_ID)
                 .agenda(generateAgenda())
-                .start(ZonedDateTime.now(ZoneId.of(("UTC"))))
-                .end(ZonedDateTime.now(ZoneId.of(("UTC"))).plusMinutes(60L)).build();
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now().plusMinutes(60L)).build();
     }
 
     private static Vote generateVote() {

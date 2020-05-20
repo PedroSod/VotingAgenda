@@ -1,15 +1,15 @@
 package com.votingAgenda.DTO;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
 @JsonPropertyOrder({"id", "title", "description"})
 public class AgendaOutputDTO extends AgendaInputDTO implements Serializable {
 

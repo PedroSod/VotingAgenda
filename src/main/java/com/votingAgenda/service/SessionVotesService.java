@@ -11,7 +11,7 @@ import java.util.Collection;
 @Service
 public class SessionVotesService {
 
-    private SessionVotesRepository sessionVotesRepository;
+    private final SessionVotesRepository sessionVotesRepository;
 
     public SessionVotesService(SessionVotesRepository sessionVotesRepository) {
         this.sessionVotesRepository = sessionVotesRepository;

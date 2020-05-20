@@ -1,5 +1,6 @@
 package com.votingAgenda.service;
 
+import com.votingAgenda.exception.ExistingSessionException;
 import com.votingAgenda.exception.RecordNotFoundException;
 import com.votingAgenda.model.Agenda;
 import com.votingAgenda.model.VotingSession;
@@ -11,8 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,7 +28,7 @@ class VotingSessionServiceTest {
     @InjectMocks
     private VotingSessionService votingSessionService;
 
-    private static String TEST_ID = "testId";
+    private static final String TEST_ID = "testId";
 
     private static VotingSession votingSession;
 
@@ -45,6 +45,14 @@ class VotingSessionServiceTest {
         VotingSession votingSessionReturned = votingSessionService.save(votingSession);
         assertEquals(votingSession, votingSessionReturned);
         verify(votingSessionRepository).save(eq(votingSession));
+    }
+
+    @Test
+    public void createExistingSessionExceptionTest() {
+        when(votingSessionRepository.existsByAgendaId(eq(TEST_ID))).thenReturn(true);
+        assertThrows(ExistingSessionException.class, () ->
+                        votingSessionService.save(votingSession),
+                "There is already a session for this agenda.");
     }
 
     @Test
@@ -67,7 +75,7 @@ class VotingSessionServiceTest {
     void findEndTimeSuccessTest() {
         Optional<VotingSession> optionalMock = Optional.ofNullable(votingSession);
         when(votingSessionRepository.findEndById(eq(TEST_ID))).thenReturn(optionalMock);
-        ZonedDateTime endTime = votingSessionService.findEndTime(TEST_ID);
+        LocalDateTime endTime = votingSessionService.findEndTime(TEST_ID);
         assertEquals(votingSession.getEnd(), endTime);
         verify(votingSessionRepository).findEndById(eq(TEST_ID));
     }
@@ -116,7 +124,7 @@ class VotingSessionServiceTest {
         return new VotingSession().builder()
                 .id(TEST_ID)
                 .agenda(generateAgenda())
-                .start(ZonedDateTime.now(ZoneId.of(("UTC"))))
-                .end(ZonedDateTime.now(ZoneId.of(("UTC"))).plusMinutes(60L)).build();
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now().plusMinutes(60L)).build();
     }
 }

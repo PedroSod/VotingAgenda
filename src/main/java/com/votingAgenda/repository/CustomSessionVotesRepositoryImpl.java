@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.query.Update;
 
 public class CustomSessionVotesRepositoryImpl implements CustomSessionVotesRepository {
 
-    private MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
 
     public CustomSessionVotesRepositoryImpl(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;

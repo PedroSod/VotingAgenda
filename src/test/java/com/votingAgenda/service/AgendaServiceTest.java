@@ -32,7 +32,7 @@ public class AgendaServiceTest {
 
     private static Agenda agendaMock;
 
-    private static String TEST_ID = "testId";
+    private static final String TEST_ID = "testId";
 
     @BeforeAll
     public static void setUp() {

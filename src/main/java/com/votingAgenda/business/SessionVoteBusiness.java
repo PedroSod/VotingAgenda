@@ -19,8 +19,7 @@ import com.votingAgenda.service.VotingSessionService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -31,11 +30,11 @@ import static java.util.stream.Collectors.groupingBy;
 @Service
 public class SessionVoteBusiness {
 
-    private VotingSessionService votingSessionService;
-    private AgendaService agendaService;
-    private SessionVotesService sessionVotesService;
-    private ModelMapper defaultModelMapper;
-    private CPFConsultationClient cpfConsultationClient;
+    private final VotingSessionService votingSessionService;
+    private final AgendaService agendaService;
+    private final SessionVotesService sessionVotesService;
+    private final ModelMapper defaultModelMapper;
+    private final CPFConsultationClient cpfConsultationClient;
 
     public SessionVoteBusiness(VotingSessionService votingSessionService, AgendaService agendaService, SessionVotesService sessionVotesService, ModelMapper defaultModelMapper, CPFConsultationClient cpfConsultationClient) {
         this.votingSessionService = votingSessionService;
@@ -57,7 +56,7 @@ public class SessionVoteBusiness {
 
     private VotingSession validateVotingSession(VotingSession votingSession, Long timeDuration) {
         if (Objects.isNull(votingSession.getStart())) {
-            votingSession.setStart(ZonedDateTime.now(ZoneId.of(("UTC"))));
+            votingSession.setStart(LocalDateTime.now());
         }
         if (Objects.isNull(timeDuration)) {
             votingSession.setEnd(votingSession.getStart().plusMinutes(1));
@@ -76,18 +75,19 @@ public class SessionVoteBusiness {
     }
 
     private void checkSessionVoteTime(String agendaId) {
-        if (votingSessionService.findEndTime(agendaId).isBefore(ZonedDateTime.now(ZoneId.of(("UTC"))))) {
+        if (votingSessionService.findEndTime(agendaId).isBefore(LocalDateTime.now())) {
             throw new VotingClosedException(agendaId);
         }
     }
 
     private void checkCPF(VoteDTO voteDTO) {
-        if (cpfConsultationClient.getStatus(voteDTO.getCpf()).equals(Status.UNABLE_TO_VOTE)) {
-            throw new UnableToVoteException(voteDTO.getCpf());
-        }
         if (sessionVotesService.existsByIdAndAllSessionVotesCpf(voteDTO.getAgendaId(), voteDTO.getCpf())) {
             throw new DuplicateVoteException(voteDTO.getCpf());
         }
+        if (cpfConsultationClient.getStatus(voteDTO.getCpf()).equals(Status.UNABLE_TO_VOTE)) {
+            throw new UnableToVoteException(voteDTO.getCpf());
+        }
+
     }
 
     public VotingResultDTO getVotingResult(String agendaId) {

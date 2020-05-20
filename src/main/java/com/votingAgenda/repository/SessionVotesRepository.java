@@ -15,7 +15,6 @@ public interface SessionVotesRepository extends MongoRepository<SessionVotes, St
 
     void deleteByVotingSessionAgendaId(String AgendaId);
 
-
     Optional<SessionVotes> findByVotingSessionAgendaId(String agendaId);
 
     boolean existsByVotingSessionIdAndAllSessionVotesCpf(String id, String cpf);

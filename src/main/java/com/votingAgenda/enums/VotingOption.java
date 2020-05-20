@@ -4,7 +4,7 @@ public enum VotingOption {
 
     YES("yes"), NO("no");
 
-    private String description;
+    private final String description;
 
     VotingOption(String description) {
         this.description = description;

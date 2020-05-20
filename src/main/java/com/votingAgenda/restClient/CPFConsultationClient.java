@@ -11,8 +11,8 @@ import java.net.URI;
 
 @Component
 public class CPFConsultationClient {
-    private RestTemplate restTemplate;
-    private URI apiUrl;
+    private final RestTemplate restTemplate;
+    private final URI apiUrl;
 
     public CPFConsultationClient(RestTemplate restTemplate, @Value("${cpf-consult.url}") URI apiUrl) {
         this.restTemplate = restTemplate;

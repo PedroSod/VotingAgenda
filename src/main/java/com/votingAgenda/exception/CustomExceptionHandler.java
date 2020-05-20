@@ -27,7 +27,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        String msg =  ExceptionUtils.getRootCauseMessage(ex.getMostSpecificCause()).split("\n")[0];
+        String msg = ExceptionUtils.getRootCauseMessage(ex.getMostSpecificCause()).split("\n")[0];
         return new ResponseEntity<>(new ErrorResponse(status, msg), HttpStatus.BAD_REQUEST);
     }
 
@@ -45,8 +45,8 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DuplicateVoteException.class)
     public final ResponseEntity<ErrorResponse> handleDuplicateVoteException(DuplicateVoteException ex, WebRequest request) {
-        ErrorResponse error = new ErrorResponse(HttpStatus.CONFLICT, ex.getLocalizedMessage());
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(VotingClosedException.class)
@@ -57,6 +57,12 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UnableToVoteException.class)
     public final ResponseEntity<ErrorResponse> handleUnableToVoteExceptionException(UnableToVoteException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ExistingSessionException.class)
+    public final ResponseEntity<ErrorResponse> handleExistingSessionException(ExistingSessionException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }

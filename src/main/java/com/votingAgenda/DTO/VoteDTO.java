@@ -4,6 +4,7 @@ import com.votingAgenda.enums.VotingOption;
 import lombok.*;
 import org.hibernate.validator.constraints.br.CPF;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -16,6 +17,7 @@ import java.io.Serializable;
 public class VoteDTO implements Serializable {
 
     private static final long serialVersionUID = -5427563818453409305L;
+    @NotBlank
     private String agendaId;
     @CPF
     private String cpf;

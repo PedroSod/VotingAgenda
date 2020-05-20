@@ -15,9 +15,9 @@ import java.net.URI;
 @RequestMapping("/votingSession")
 @RestController
 public class VotingSessionController {
-    private ModelMapper defaultModelMapper;
-    private VotingSessionService votingSessionService;
-    private SessionVoteBusiness sessionVoteBusiness;
+    private final ModelMapper defaultModelMapper;
+    private final VotingSessionService votingSessionService;
+    private final SessionVoteBusiness sessionVoteBusiness;
 
     public VotingSessionController( ModelMapper defaultModelMapper, VotingSessionService votingSessionService, SessionVoteBusiness sessionVoteBusiness) {
         this.defaultModelMapper = defaultModelMapper;

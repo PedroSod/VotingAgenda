@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/agenda")
 @RestController
 public class AgendaController {
-    private AgendaService agendaService;
-    private SessionVoteBusiness sessionVoteBusiness;
-    private ModelMapper defaultModelMapper;
+    private final AgendaService agendaService;
+    private final SessionVoteBusiness sessionVoteBusiness;
+    private final ModelMapper defaultModelMapper;
 
     public AgendaController(AgendaService agendaService, SessionVoteBusiness sessionVoteBusiness, ModelMapper defaultModelMapper) {
         this.agendaService = agendaService;
@@ -46,10 +46,10 @@ public class AgendaController {
     }
 
     @GetMapping
-    public ResponseEntity<Collection<AgendaInputDTO>> getAll() {
+    public ResponseEntity<Collection<AgendaOutputDTO>> getAll() {
         Collection<Agenda> todasPautas = agendaService.findAll();
-        Collection<AgendaInputDTO> todasPautasDTO = todasPautas.stream().map(
-                agenda -> defaultModelMapper.map(agenda, AgendaInputDTO.class)).collect(Collectors.toList());
+        Collection<AgendaOutputDTO> todasPautasDTO = todasPautas.stream().map(
+                agenda -> defaultModelMapper.map(agenda, AgendaOutputDTO.class)).collect(Collectors.toList());
         return ResponseEntity.ok(todasPautasDTO);
     }
 

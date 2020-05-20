@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/voting")
 @RestController
 public class VotingController {
-    private SessionVoteBusiness sessionVoteBusiness;
-    private ModelMapper defaultModelMapper;
+    private final SessionVoteBusiness sessionVoteBusiness;
+    private final ModelMapper defaultModelMapper;
 
     public VotingController(SessionVoteBusiness sessionVoteBusiness, ModelMapper defaultModelMapper) {
         this.sessionVoteBusiness = sessionVoteBusiness;

@@ -1,17 +1,18 @@
 package com.votingAgenda.service;
 
+import com.votingAgenda.exception.ExistingSessionException;
 import com.votingAgenda.exception.RecordNotFoundException;
 import com.votingAgenda.model.VotingSession;
 import com.votingAgenda.repository.VotingSessionRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 @Service
 public class VotingSessionService {
 
-    private VotingSessionRepository votingSessionRepository;
-    private SessionVotesService sessionVotesService;
+    private final VotingSessionRepository votingSessionRepository;
+    private final SessionVotesService sessionVotesService;
 
     public VotingSessionService(VotingSessionRepository votingSessionRepository, SessionVotesService sessionVotesRepository) {
         this.votingSessionRepository = votingSessionRepository;
@@ -19,6 +20,9 @@ public class VotingSessionService {
     }
 
     public VotingSession save(VotingSession votingSession) {
+        if (votingSessionRepository.existsByAgendaId(votingSession.getAgenda().getId())) {
+            throw new ExistingSessionException();
+        }
         return votingSessionRepository.save(votingSession);
     }
 
@@ -27,7 +31,7 @@ public class VotingSessionService {
                 orElseThrow(() -> new RecordNotFoundException(id));
     }
 
-    public ZonedDateTime findEndTime(String id) {
+    public LocalDateTime findEndTime(String id) {
         VotingSession votingSession = votingSessionRepository.findEndById(id).
                 orElseThrow(() -> new RecordNotFoundException(id));
         return votingSession.getEnd();

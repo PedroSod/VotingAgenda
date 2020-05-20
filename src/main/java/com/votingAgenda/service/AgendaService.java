@@ -11,8 +11,8 @@ import java.util.Collection;
 @Service
 public class AgendaService {
 
-    private AgendaRepository agendaRepository;
-    private VotingSessionService votingSessionService;
+    private final AgendaRepository agendaRepository;
+    private final VotingSessionService votingSessionService;
 
     public AgendaService(AgendaRepository agendaRepository, VotingSessionService votingSessionService) {
         this.agendaRepository = agendaRepository;
