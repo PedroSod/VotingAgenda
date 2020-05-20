@@ -25,7 +25,7 @@ public class VotingSessionController {
         this.sessionVoteBusiness = sessionVoteBusiness;
     }
 
-    @PostMapping("/start/")
+    @PostMapping("/start")
     public ResponseEntity createSession(@RequestBody VotingSessionInputDTO votingSessionDTO) {
         String id = sessionVoteBusiness.startVotingSession(votingSessionDTO);
         URI location = UriComponentsBuilder.fromUriString("votingSession")

@@ -4,7 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @EqualsAndHashCode
 @AllArgsConstructor
@@ -18,6 +18,6 @@ public class VotingSession implements Serializable {
     @Id
     private String id;
     private Agenda agenda;
-    private LocalDateTime start;
-    private LocalDateTime end;
+    private ZonedDateTime start;
+    private ZonedDateTime end;
 }

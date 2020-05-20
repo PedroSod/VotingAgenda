@@ -22,8 +22,8 @@ public class VotingController {
     }
 
     @PostMapping("/vote")
-    public ResponseEntity createSession(@Validated  @RequestBody VoteDTO voteDTO) throws Exception {
-       sessionVoteBusiness.toVote(voteDTO);
+    public ResponseEntity createSession(@Validated @RequestBody VoteDTO voteDTO) {
+        sessionVoteBusiness.toVote(voteDTO);
         return ResponseEntity.ok().build();
     }
 

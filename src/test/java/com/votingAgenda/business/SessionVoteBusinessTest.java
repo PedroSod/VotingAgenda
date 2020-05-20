@@ -23,7 +23,8 @@ import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -98,7 +99,7 @@ public class SessionVoteBusinessTest {
         when(sessionVotesService.existsByIdAndAllSessionVotesCpf(
                 eq(TEST_ID), eq(voteDTO.getCpf()))).thenReturn(false);
         when(votingSessionService.findEndTime(eq(TEST_ID))).
-                thenReturn(LocalDateTime.now().plusMinutes(60L));
+                thenReturn(ZonedDateTime.now(ZoneId.of(("UTC"))).plusMinutes(60L));
         doNothing().when(sessionVotesService).pushVote(eq(TEST_ID), any(Vote.class));
         sessionVoteBusiness.toVote(voteDTO);
         verify(sessionVotesService).existsByIdAndAllSessionVotesCpf(
@@ -133,7 +134,7 @@ public class SessionVoteBusinessTest {
                 eq(TEST_ID), eq(voteDTO.getCpf()))).thenReturn(false);
 
         when(votingSessionService.findEndTime(eq(TEST_ID))).
-                thenReturn(LocalDateTime.now().minusMinutes(60L));
+                thenReturn(ZonedDateTime.now(ZoneId.of(("UTC"))).minusMinutes(60L));
 
         assertThrows(VotingClosedException.class, () ->
                         sessionVoteBusiness.toVote(voteDTO),
@@ -168,8 +169,8 @@ public class SessionVoteBusinessTest {
         return new VotingSession().builder()
                 .id(TEST_ID)
                 .agenda(generateAgenda())
-                .start(LocalDateTime.now())
-                .end(LocalDateTime.now().plusMinutes(60L)).build();
+                .start(ZonedDateTime.now(ZoneId.of(("UTC"))))
+                .end(ZonedDateTime.now(ZoneId.of(("UTC"))).plusMinutes(60L)).build();
     }
 
     private static SessionVotes generateSessionVotes() {
@@ -183,7 +184,7 @@ public class SessionVoteBusinessTest {
     public static VotingSessionInputDTO generateVotingSessionInputDTO() {
         return new VotingSessionInputDTO().builder()
                 .agendaId(TEST_ID)
-                .start(LocalDateTime.now())
+                .start(ZonedDateTime.now(ZoneId.of(("UTC"))))
                 .timeDuration(60L)
                 .build();
     }

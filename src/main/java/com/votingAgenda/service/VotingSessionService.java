@@ -5,7 +5,7 @@ import com.votingAgenda.model.VotingSession;
 import com.votingAgenda.repository.VotingSessionRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Service
 public class VotingSessionService {
@@ -27,7 +27,7 @@ public class VotingSessionService {
                 orElseThrow(() -> new RecordNotFoundException(id));
     }
 
-    public LocalDateTime findEndTime(String id) {
+    public ZonedDateTime findEndTime(String id) {
         VotingSession votingSession = votingSessionRepository.findEndById(id).
                 orElseThrow(() -> new RecordNotFoundException(id));
         return votingSession.getEnd();

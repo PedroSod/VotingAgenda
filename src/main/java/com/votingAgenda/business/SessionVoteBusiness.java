@@ -19,7 +19,8 @@ import com.votingAgenda.service.VotingSessionService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -56,7 +57,7 @@ public class SessionVoteBusiness {
 
     private VotingSession validateVotingSession(VotingSession votingSession, Long timeDuration) {
         if (Objects.isNull(votingSession.getStart())) {
-            votingSession.setStart(LocalDateTime.now());
+            votingSession.setStart(ZonedDateTime.now(ZoneId.of(("UTC"))));
         }
         if (Objects.isNull(timeDuration)) {
             votingSession.setEnd(votingSession.getStart().plusMinutes(1));
@@ -75,7 +76,7 @@ public class SessionVoteBusiness {
     }
 
     private void checkSessionVoteTime(String agendaId) {
-        if (votingSessionService.findEndTime(agendaId).isBefore(LocalDateTime.now())) {
+        if (votingSessionService.findEndTime(agendaId).isBefore(ZonedDateTime.now(ZoneId.of(("UTC"))))) {
             throw new VotingClosedException(agendaId);
         }
     }

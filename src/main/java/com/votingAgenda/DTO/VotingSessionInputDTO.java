@@ -3,7 +3,8 @@ package com.votingAgenda.DTO;
 import lombok.*;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+
 
 @EqualsAndHashCode
 @AllArgsConstructor
@@ -16,7 +17,7 @@ public class VotingSessionInputDTO implements Serializable {
 
     private static final long serialVersionUID = 2436815296747980242L;
     private String agendaId;
-    private LocalDateTime start;
+    private ZonedDateTime start;
     private Long timeDuration;
 
 }

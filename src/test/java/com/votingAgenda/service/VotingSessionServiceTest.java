@@ -11,13 +11,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(SpringExtension.class)
 class VotingSessionServiceTest {
@@ -67,7 +67,7 @@ class VotingSessionServiceTest {
     void findEndTimeSuccessTest() {
         Optional<VotingSession> optionalMock = Optional.ofNullable(votingSession);
         when(votingSessionRepository.findEndById(eq(TEST_ID))).thenReturn(optionalMock);
-        LocalDateTime endTime = votingSessionService.findEndTime(TEST_ID);
+        ZonedDateTime endTime = votingSessionService.findEndTime(TEST_ID);
         assertEquals(votingSession.getEnd(), endTime);
         verify(votingSessionRepository).findEndById(eq(TEST_ID));
     }
@@ -116,7 +116,7 @@ class VotingSessionServiceTest {
         return new VotingSession().builder()
                 .id(TEST_ID)
                 .agenda(generateAgenda())
-                .start(LocalDateTime.now())
-                .end(LocalDateTime.now().plusMinutes(60L)).build();
+                .start(ZonedDateTime.now(ZoneId.of(("UTC"))))
+                .end(ZonedDateTime.now(ZoneId.of(("UTC"))).plusMinutes(60L)).build();
     }
 }

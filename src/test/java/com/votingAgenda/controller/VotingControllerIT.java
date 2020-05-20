@@ -33,11 +33,9 @@ public class VotingControllerIT {
     @MockBean
     private SessionVoteBusiness sessionVoteBusiness;
 
-    private static final String anyString = "any_string";
-
 
     @Test
-    public void createSession() throws Exception {
+    public void toVote() throws Exception {
         VoteDTO voteDTO = generateVoteDTO();
         doNothing().when(sessionVoteBusiness).toVote(eq(voteDTO));
         mockMvc.perform(post("/voting/vote")
