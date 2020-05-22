@@ -9,12 +9,13 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 
-public class OpenApiConfig  {
-	@Bean
+public class OpenApiConfig {
+    @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .components(new Components())
-                .info(new Info().title("Agenda Voting  API").description(
-                        "Agenda Voting API rest documentation."));
+                .info(new Info().title("Agenda Voting  API")
+                        .description(
+                                "Agenda Voting API rest documentation."));
     }
 }

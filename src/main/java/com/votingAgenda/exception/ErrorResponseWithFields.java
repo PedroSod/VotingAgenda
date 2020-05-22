@@ -3,21 +3,22 @@ package com.votingAgenda.exception;
 import lombok.*;
 import org.springframework.http.HttpStatus;
 
+import java.util.Collection;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @EqualsAndHashCode
-public class ErrorResponse {
+public class ErrorResponseWithFields {
     private int errorCode;
     private String error;
-    private String message;
+    private Collection<String> fieldErrors;
 
-    public ErrorResponse(HttpStatus status, String message) {
+    public ErrorResponseWithFields(HttpStatus status, Collection<String> fieldErrors) {
         this.errorCode = status.value();
         this.error = status.name();
-        this.message = message;
+        this.fieldErrors = fieldErrors;
     }
-
 
 }

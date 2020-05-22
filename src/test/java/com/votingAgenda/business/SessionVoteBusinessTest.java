@@ -121,7 +121,6 @@ public class SessionVoteBusinessTest {
                 "the CPF " + voteDTO.getCpf() + ", has already voted on this agenda.");
         verify(sessionVotesService).existsByIdAndAllSessionVotesCpf(
                 eq(TEST_ID), eq(voteDTO.getCpf()));
-        verify(cpfConsultationClient).getStatus(eq(voteDTO.getCpf()));
     }
 
     @Test
