@@ -10,7 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.pedrosodre</groupId>
-    <artifactId>desafiotecnico</artifactId>
+    <artifactId>agendavoting</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Sessoes de Votacao</name>
     <description>Desafio tecnico sicredi</description>
@@ -80,6 +80,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
+        <finalName>agendaVoting</finalName>
     </build>
 
 </project>
