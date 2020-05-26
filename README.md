@@ -11,3 +11,4 @@ Sistema de Votação em Pautas
 - Foi utilizado Junit e Mockito para fazer testes unitários e de integração;
 - Projeto parte de principio que terá um banco mongo conforme as configurações do application.yml;
 - Para rodar, é necessário clonar e rodar em alguma IDE (IntelliJ, Eclipse);
+- É possível rodar através do docker, acessando a pasta raiz via terminal e rodando o comando "docker-compose up --build";
