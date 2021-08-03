@@ -46,7 +46,7 @@ public class VotingSessionControllerIT {
     @MockBean
     private SessionVoteBusiness sessionVoteBusiness;
     private static final String TEST_ID = "testId";
-
+    private static final LocalDateTime date = LocalDateTime.now();
     @BeforeAll
     public static void setUp() {
         mapper = new ObjectMapper();
@@ -118,8 +118,6 @@ public class VotingSessionControllerIT {
     @Test
     public void getVotingSessionById() throws Exception {
         VotingSession votingSession = generateVotingSession();
-        DateTimeFormatter dateTimeFormatter =
-                DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSSSSS");
 
         when(votingSessionService.findById(TEST_ID)).thenReturn(votingSession);
         mockMvc.perform(get((String.format("%s/%s", "/votingSession", votingSession.getId()))))
@@ -128,8 +126,8 @@ public class VotingSessionControllerIT {
                 .andExpect(jsonPath("$.agenda.id").value(votingSession.getAgenda().getId()))
                 .andExpect(jsonPath("$.agenda.title").value(votingSession.getAgenda().getTitle()))
                 .andExpect(jsonPath("$.agenda.description").value(votingSession.getAgenda().getDescription()))
-                .andExpect(jsonPath("$.start").value(votingSession.getStart().format(dateTimeFormatter)))
-                .andExpect(jsonPath("$.end").value(votingSession.getEnd().format(dateTimeFormatter)));
+                .andExpect(jsonPath("$.start").value(votingSession.getStart().toString()))
+                .andExpect(jsonPath("$.end").value(votingSession.getEnd().toString()));
 
     }
 
@@ -151,8 +149,8 @@ public class VotingSessionControllerIT {
         return new VotingSession().builder()
                 .id(TEST_ID)
                 .agenda(generateAgenda())
-                .start(LocalDateTime.now())
-                .end(LocalDateTime.now().plusMinutes(60L)).build();
+                .start(date)
+                .end(date.plusMinutes(60L)).build();
     }
 
     private static Agenda generateAgenda() {
