@@ -41,8 +41,11 @@ public class AgendaServiceTest {
 
     @Test
     public void saveSuccessTest() {
+
         when(agendaRepository.save(eq(agendaMock))).thenReturn(agendaMock);
+
         Agenda agendaReturned = agendaService.save(agendaMock);
+
         assertEquals(agendaMock, agendaReturned);
         verify(agendaRepository).save(eq(agendaMock));
     }
@@ -50,8 +53,11 @@ public class AgendaServiceTest {
     @Test
     public void findByIdSuccessTest() {
         Optional<Agenda> optionalMock = Optional.ofNullable(agendaMock);
+
         when(agendaRepository.findById(eq(TEST_ID))).thenReturn(optionalMock);
+
         Agenda agendaReturned = agendaService.findById(TEST_ID);
+
         assertEquals(agendaMock, agendaReturned);
         verify(agendaRepository).findById(eq(TEST_ID));
     }
@@ -111,7 +117,7 @@ public class AgendaServiceTest {
     }
 
     private static Agenda generateAgenda() {
-        return new Agenda().builder()
+        return Agenda.builder()
                 .id(TEST_ID)
                 .title("testTitle")
                 .description("test description")

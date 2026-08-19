@@ -1,25 +1,25 @@
 package com.agendavoting.restClient;
 
-import com.agendavoting.DTO.CPFConsultDTO;
+import com.agendavoting.dto.CPFConsultDTO;
 import com.agendavoting.enums.Status;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.RestClient;
 
 import java.net.URI;
 
 @Component
 public class CPFConsultationClient {
-    private final RestTemplate restTemplate;
-    private final URI apiUrl;
+    private final RestClient restClient;
 
-    public CPFConsultationClient(RestTemplate restTemplate, @Value("${cpf-consult.url}") URI apiUrl) {
-        this.restTemplate = restTemplate;
-        this.apiUrl = apiUrl;
+    public CPFConsultationClient(RestClient.Builder restClientBuilder, @Value("${cpf-consult.url}") URI apiUrl) {
+        this.restClient = restClientBuilder.baseUrl(apiUrl.toString()).build();
     }
     public Status getStatus(String cpf) {
-        String url = UriComponentsBuilder.fromUri(apiUrl).path("{cpf}").buildAndExpand(cpf).toUriString();
-        return restTemplate.getForObject(url, CPFConsultDTO.class).getStatus();
+        CPFConsultDTO response = restClient.get().uri("{cpf}", cpf).retrieve().body(CPFConsultDTO.class);
+        if (response == null || response.status() == null) {
+            throw new IllegalStateException("CPF consultation returned an invalid response");
+        }
+        return response.status();
     }
 }

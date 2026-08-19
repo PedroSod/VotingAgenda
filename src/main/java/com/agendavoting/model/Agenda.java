@@ -3,6 +3,7 @@ package com.agendavoting.model;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 @EqualsAndHashCode
@@ -14,6 +15,7 @@ import java.io.Serializable;
 public class Agenda implements Serializable {
 
 
+    @Serial
     private static final long serialVersionUID = 8827127855599510984L;
     @Id
     private String id;

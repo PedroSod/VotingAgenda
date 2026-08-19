@@ -2,7 +2,7 @@ package com.agendavoting.restClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.agendavoting.DTO.CPFConsultDTO;
+import com.agendavoting.dto.CPFConsultDTO;
 import com.agendavoting.configuration.ApplicationConfig;
 import com.agendavoting.enums.Status;
 import org.junit.jupiter.api.BeforeAll;
@@ -56,6 +56,6 @@ public class CPFConsultationClientIT {
 
         Status status = cpfConsultationClient.getStatus(cpf);
         server.verify();
-        assertEquals(cpfConsultDTO.getStatus(), status);
+        assertEquals(cpfConsultDTO.status(), status);
     }
 }

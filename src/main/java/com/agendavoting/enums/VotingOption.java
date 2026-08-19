@@ -1,5 +1,8 @@
 package com.agendavoting.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum VotingOption {
 
     YES("yes"), NO("no");
@@ -10,7 +13,4 @@ public enum VotingOption {
         this.description = description;
     }
 
-    public String getDescription() {
-        return description;
-    }
 }

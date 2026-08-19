@@ -1,8 +1,7 @@
 package com.agendavoting.controller;
 
+import com.agendavoting.dto.VotingResultDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.agendavoting.DTO.AgendaInputDTO;
-import com.agendavoting.DTO.VotingResultDTO;
 import com.agendavoting.business.SessionVoteBusiness;
 import com.agendavoting.configuration.ApplicationConfig;
 import com.agendavoting.exception.BadRequestException;
@@ -12,9 +11,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -22,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -30,15 +27,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AgendaController.class)
-@Import(value = {ApplicationConfig.class, RestTemplateAutoConfiguration.class})
-public class AgendaControllerIT {
+@Import(ApplicationConfig.class)
+public class AgendaControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     private static ObjectMapper mapper;
-    @MockBean
+    @MockitoBean
     private AgendaService agendaService;
-    @MockBean
+    @MockitoBean
     private SessionVoteBusiness sessionVoteBusiness;
     private static final String TEST_ID = "testId";
 
@@ -135,20 +132,13 @@ public class AgendaControllerIT {
 
         mockMvc.perform(get((String.format("%s/%s/%s", "/agenda", TEST_ID, "result"))))
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(jsonPath("$.yesVotes").value(votingResultDTO.getYesVotes()))
-                .andExpect(jsonPath("$.noVotes").value(votingResultDTO.getNoVotes()))
-                .andExpect(jsonPath("$.totalVotes").value(votingResultDTO.getTotalVotes()));
-    }
-
-    private static AgendaInputDTO generateAgendaInputDTO() {
-        return new AgendaInputDTO().builder()
-                .title("testTitle")
-                .description("test description")
-                .build();
+                .andExpect(jsonPath("$.yesVotes").value(votingResultDTO.yesVotes()))
+                .andExpect(jsonPath("$.noVotes").value(votingResultDTO.noVotes()))
+                .andExpect(jsonPath("$.totalVotes").value(votingResultDTO.totalVotes()));
     }
 
     private static Agenda generateAgenda() {
-        return new Agenda().builder()
+        return Agenda.builder()
                 .id(TEST_ID)
                 .title("testTitle")
                 .description("test description")
@@ -156,11 +146,6 @@ public class AgendaControllerIT {
     }
 
     private static VotingResultDTO generateVotingResultDTO() {
-        return new VotingResultDTO()
-                .builder()
-                .yesVotes(1L)
-                .noVotes(2L)
-                .totalVotes(3L)
-                .build();
+        return new VotingResultDTO(1L, 2L, 3L);
     }
 }

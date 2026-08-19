@@ -1,8 +1,8 @@
 package com.agendavoting.controller;
 
-import com.agendavoting.DTO.AgendaInputDTO;
-import com.agendavoting.DTO.AgendaOutputDTO;
-import com.agendavoting.DTO.VotingResultDTO;
+import com.agendavoting.dto.AgendaInputDTO;
+import com.agendavoting.dto.AgendaOutputDTO;
+import com.agendavoting.dto.VotingResultDTO;
 import com.agendavoting.business.SessionVoteBusiness;
 import com.agendavoting.exception.ErrorResponse;
 import com.agendavoting.exception.ErrorResponseWithFields;
@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -33,12 +32,10 @@ import java.util.stream.Collectors;
 public class AgendaController {
     private final AgendaService agendaService;
     private final SessionVoteBusiness sessionVoteBusiness;
-    private final ModelMapper defaultModelMapper;
 
-    public AgendaController(AgendaService agendaService, SessionVoteBusiness sessionVoteBusiness, ModelMapper defaultModelMapper) {
+    public AgendaController(AgendaService agendaService, SessionVoteBusiness sessionVoteBusiness) {
         this.agendaService = agendaService;
         this.sessionVoteBusiness = sessionVoteBusiness;
-        this.defaultModelMapper = defaultModelMapper;
     }
 
     @Operation(summary = "Create Agenda", description = "Get a Agenda by id")
@@ -48,8 +45,8 @@ public class AgendaController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseWithFields.class)))
     })
     @PostMapping(consumes = "application/json")
-    public ResponseEntity createAgenda(@Validated @RequestBody AgendaInputDTO agendaDTO) {
-        Agenda agenda = defaultModelMapper.map(agendaDTO, Agenda.class);
+    public ResponseEntity<Void> createAgenda(@Validated @RequestBody AgendaInputDTO agendaDTO) {
+        Agenda agenda = toAgenda(agendaDTO);
         String id = agendaService.save(agenda).getId();
         URI location = UriComponentsBuilder.fromUriString("agenda")
                 .path("/{id}").buildAndExpand(id).toUri();
@@ -59,13 +56,13 @@ public class AgendaController {
     @Operation(summary = "Get Agenda", description = "Get a Agenda by id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(schema = @Schema(implementation = AgendaInputDTO.class))),
+                    content = @Content(schema = @Schema(implementation = AgendaOutputDTO.class))),
             @ApiResponse(responseCode = "404", description = "Agenda not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping(path = "/{id}", produces = "application/json")
-    public ResponseEntity<AgendaInputDTO> getAgendaById(@PathVariable String id) {
-        AgendaOutputDTO agendaDTO = defaultModelMapper.map(agendaService.findById(id), AgendaOutputDTO.class);
+    public ResponseEntity<AgendaOutputDTO> getAgendaById(@PathVariable String id) {
+        AgendaOutputDTO agendaDTO = toAgendaOutput(agendaService.findById(id));
         return ResponseEntity.ok(agendaDTO);
     }
 
@@ -77,8 +74,9 @@ public class AgendaController {
     @GetMapping(produces = "application/json")
     public ResponseEntity<Collection<AgendaOutputDTO>> getAll() {
         Collection<Agenda> allAgendas = agendaService.findAll();
-        Collection<AgendaOutputDTO> allAgendasDTO = allAgendas.stream().map(
-                agenda -> defaultModelMapper.map(agenda, AgendaOutputDTO.class)).collect(Collectors.toList());
+        Collection<AgendaOutputDTO> allAgendasDTO = allAgendas.stream()
+                .map(this::toAgendaOutput)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(allAgendasDTO);
     }
 
@@ -93,7 +91,7 @@ public class AgendaController {
     @PutMapping("/{id}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void update(@PathVariable String id, @Validated @RequestBody AgendaInputDTO agendaDTO) {
-        Agenda agenda = defaultModelMapper.map(agendaDTO, Agenda.class);
+        Agenda agenda = toAgenda(agendaDTO);
         agendaService.update(id, agenda);
     }
 
@@ -117,5 +115,16 @@ public class AgendaController {
     @GetMapping(path = "/{id}/result", produces = "application/json")
     public ResponseEntity<VotingResultDTO> getResult(@PathVariable String id) {
         return ResponseEntity.ok(sessionVoteBusiness.getVotingResult(id));
+    }
+
+    private Agenda toAgenda(AgendaInputDTO dto) {
+        return Agenda.builder()
+                .title(dto.title())
+                .description(dto.description())
+                .build();
+    }
+
+    private AgendaOutputDTO toAgendaOutput(Agenda agenda) {
+        return new AgendaOutputDTO(agenda.getId(), agenda.getTitle(), agenda.getDescription());
     }
 }

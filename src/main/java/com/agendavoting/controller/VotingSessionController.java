@@ -1,7 +1,8 @@
 package com.agendavoting.controller;
 
-import com.agendavoting.DTO.VotingSessionInputDTO;
-import com.agendavoting.DTO.VotingSessionOutputDTO;
+import com.agendavoting.dto.VotingSessionInputDTO;
+import com.agendavoting.dto.VotingSessionOutputDTO;
+import com.agendavoting.dto.AgendaOutputDTO;
 import com.agendavoting.business.SessionVoteBusiness;
 import com.agendavoting.exception.ErrorResponse;
 import com.agendavoting.exception.ErrorResponseWithFields;
@@ -12,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,12 +24,10 @@ import java.net.URI;
 @RestController
 @Tag(name = "Voting Session", description = "Operations about Voting Session")
 public class VotingSessionController {
-    private final ModelMapper defaultModelMapper;
     private final VotingSessionService votingSessionService;
     private final SessionVoteBusiness sessionVoteBusiness;
 
-    public VotingSessionController(ModelMapper defaultModelMapper, VotingSessionService votingSessionService, SessionVoteBusiness sessionVoteBusiness) {
-        this.defaultModelMapper = defaultModelMapper;
+    public VotingSessionController(VotingSessionService votingSessionService, SessionVoteBusiness sessionVoteBusiness) {
         this.votingSessionService = votingSessionService;
         this.sessionVoteBusiness = sessionVoteBusiness;
     }
@@ -41,7 +39,7 @@ public class VotingSessionController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseWithFields.class)))
     })
     @PostMapping(path = "/start", consumes = "application/json")
-    public ResponseEntity createSession(@RequestBody VotingSessionInputDTO votingSessionDTO) {
+    public ResponseEntity<Void> createSession(@RequestBody VotingSessionInputDTO votingSessionDTO) {
         String id = sessionVoteBusiness.startVotingSession(votingSessionDTO);
         URI location = UriComponentsBuilder.fromUriString("votingSession")
                 .path("/{id}").buildAndExpand(id).toUri();
@@ -57,8 +55,15 @@ public class VotingSessionController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<VotingSessionOutputDTO> getVotingSessionById(@PathVariable String id) {
-        VotingSessionOutputDTO votingSessionDTO =
-                defaultModelMapper.map(votingSessionService.findById(id), VotingSessionOutputDTO.class);
+        var votingSession = votingSessionService.findById(id);
+        VotingSessionOutputDTO votingSessionDTO = new VotingSessionOutputDTO(
+                votingSession.getId(),
+                new AgendaOutputDTO(
+                        votingSession.getAgenda().getId(),
+                        votingSession.getAgenda().getTitle(),
+                        votingSession.getAgenda().getDescription()),
+                votingSession.getStart(),
+                votingSession.getEnd());
         return ResponseEntity.ok(votingSessionDTO);
     }
 

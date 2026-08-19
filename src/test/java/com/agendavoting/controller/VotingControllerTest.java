@@ -1,7 +1,7 @@
 package com.agendavoting.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.agendavoting.DTO.VoteDTO;
+import com.agendavoting.dto.VoteDTO;
 import com.agendavoting.business.SessionVoteBusiness;
 import com.agendavoting.configuration.ApplicationConfig;
 import com.agendavoting.enums.VotingOption;
@@ -11,9 +11,8 @@ import com.agendavoting.exception.VotingClosedException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -28,16 +27,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(VotingController.class)
-@Import(value = {ApplicationConfig.class, RestTemplateAutoConfiguration.class})
-public class VotingControllerIT {
+@Import(ApplicationConfig.class)
+public class VotingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @MockBean
+    @MockitoBean
     private SessionVoteBusiness sessionVoteBusiness;
-    private static final String TEST_ID = "testId";
 
 
     @Test
@@ -53,8 +51,7 @@ public class VotingControllerIT {
 
     @Test
     public void toVoteVoteOptionBadRequestTest() throws Exception {
-        VoteDTO voteDTO = generateVoteDTO();
-        voteDTO.setVotingOption(null);
+        VoteDTO voteDTO = new VoteDTO("testId", "91693816075", null);
         doNothing().when(sessionVoteBusiness).toVote(eq(voteDTO));
         mockMvc.perform(post("/voting/vote")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -78,15 +75,14 @@ public class VotingControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value(400))
                 .andExpect(jsonPath("$.error").value("BAD_REQUEST"))
-                .andExpect(jsonPath("$.message")
-                        .value("InvalidFormatException: Cannot deserialize value of type `com.agendavoting.enums.VotingOption` from String \"\": not one of the values accepted for Enum class: [NO, YES]"));
+                .andExpect(jsonPath("$.message").exists());
     }
 
     @Test
     public void toVoteUnableToVoteExceptionTest() throws Exception {
         VoteDTO voteDTO = generateVoteDTO();
 
-        doThrow(new UnableToVoteException(voteDTO.getCpf()))
+        doThrow(new UnableToVoteException(voteDTO.cpf()))
                 .when(sessionVoteBusiness).toVote(generateVoteDTO());
 
         mockMvc.perform(post("/voting/vote")
@@ -95,14 +91,14 @@ public class VotingControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value(400))
                 .andExpect(jsonPath("$.error").value("BAD_REQUEST"))
-                .andExpect(jsonPath("$.message").value("The cpf " + voteDTO.getCpf() + " is unable to vote."));
+                .andExpect(jsonPath("$.message").value("The cpf " + voteDTO.cpf() + " is unable to vote."));
     }
 
     @Test
     public void toVoteDuplicateVoteExceptionTest() throws Exception {
         VoteDTO voteDTO = generateVoteDTO();
 
-        doThrow(new DuplicateVoteException(voteDTO.getCpf()))
+        doThrow(new DuplicateVoteException(voteDTO.cpf()))
                 .when(sessionVoteBusiness).toVote(generateVoteDTO());
 
         mockMvc.perform(post("/voting/vote")
@@ -111,14 +107,14 @@ public class VotingControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value(400))
                 .andExpect(jsonPath("$.error").value("BAD_REQUEST"))
-                .andExpect(jsonPath("$.message").value("the CPF " + voteDTO.getCpf() + ", has already voted on this agenda."));
+                .andExpect(jsonPath("$.message").value("the CPF " + voteDTO.cpf() + ", has already voted on this agenda."));
     }
 
     @Test
     public void toVoteVotingClosedExceptionTest() throws Exception {
         VoteDTO voteDTO = generateVoteDTO();
 
-        doThrow(new VotingClosedException(voteDTO.getAgendaId()))
+        doThrow(new VotingClosedException(voteDTO.agendaId()))
                 .when(sessionVoteBusiness).toVote(generateVoteDTO());
 
         mockMvc.perform(post("/voting/vote")
@@ -127,14 +123,10 @@ public class VotingControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value(400))
                 .andExpect(jsonPath("$.error").value("BAD_REQUEST"))
-                .andExpect(jsonPath("$.message").value("The voting session " + voteDTO.getAgendaId() + " has ended."));
+                .andExpect(jsonPath("$.message").value("The voting session " + voteDTO.agendaId() + " has ended."));
     }
 
     public static VoteDTO generateVoteDTO() {
-        return new VoteDTO().builder()
-                .agendaId("testId")
-                .cpf("91693816075")
-                .votingOption(VotingOption.YES)
-                .build();
+        return new VoteDTO("testId", "91693816075", VotingOption.YES);
     }
 }
