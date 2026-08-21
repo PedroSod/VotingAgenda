@@ -25,7 +25,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @ExtendWith(SpringExtension.class)
 @RestClientTest(CPFConsultationClient.class)
 @Import(ApplicationConfig.class)
-public class CPFConsultationClientIT {
+public class CPFConsultationClientTest {
 
     @Autowired
     private CPFConsultationClient cpfConsultationClient;

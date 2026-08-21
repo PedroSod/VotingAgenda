@@ -8,7 +8,7 @@ RUN mvn -q -DskipTests package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 RUN useradd --system --uid 10001 appuser
-COPY --from=build /workspace/target/agendaVoting.jar app.jar
+COPY --from=build /workspace/target/votingAgenda.jar app.jar
 USER appuser
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
