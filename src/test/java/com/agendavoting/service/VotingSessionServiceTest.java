@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -24,7 +23,7 @@ class VotingSessionServiceTest {
     @Mock
     private VotingSessionRepository votingSessionRepository;
     @Mock
-    private SessionVotesService sessionVotesService;
+    private VoteService voteService;
     @InjectMocks
     private VotingSessionService votingSessionService;
 
@@ -35,7 +34,6 @@ class VotingSessionServiceTest {
 
     @BeforeAll
     public static void setUp() {
-        Agenda agendaMock = generateAgenda();
         votingSession = generateVotingSession();
     }
 
@@ -72,37 +70,36 @@ class VotingSessionServiceTest {
     }
 
     @Test
-    void findEndTimeSuccessTest() {
+    void findByAgendaIdSuccessTest() {
         Optional<VotingSession> optionalMock = Optional.ofNullable(votingSession);
-        when(votingSessionRepository.findEndById(eq(TEST_ID))).thenReturn(optionalMock);
-        LocalDateTime endTime = votingSessionService.findEndTime(TEST_ID);
-        assertEquals(votingSession.getEnd(), endTime);
-        verify(votingSessionRepository).findEndById(eq(TEST_ID));
+        when(votingSessionRepository.findByAgendaId(eq(TEST_ID))).thenReturn(optionalMock);
+        assertEquals(votingSession, votingSessionService.findByAgendaId(TEST_ID));
+        verify(votingSessionRepository).findByAgendaId(eq(TEST_ID));
     }
 
     @Test
-    public void findEndTimeNotFoundTest() {
+    public void findByAgendaIdNotFoundTest() {
         assertThrows(RecordNotFoundException.class, () ->
-                        votingSessionService.findEndTime(TEST_ID),
+                        votingSessionService.findByAgendaId(TEST_ID),
                 "No record found for id : " + TEST_ID);
     }
 
     @Test
     void deleteSuccessTest() {
-        doNothing().when(votingSessionRepository).deleteById(eq(TEST_ID));
-        doNothing().when(sessionVotesService).deleteByVotingSessionId(eq(TEST_ID));
+        when(votingSessionRepository.findById(TEST_ID)).thenReturn(Optional.of(votingSession));
+        doNothing().when(voteService).deleteByVotingSessionId(eq(TEST_ID));
         votingSessionService.delete(TEST_ID);
         verify(votingSessionRepository).deleteById(eq(TEST_ID));
-        verify(sessionVotesService).deleteByVotingSessionId(eq(TEST_ID));
+        verify(voteService).deleteByVotingSessionId(eq(TEST_ID));
     }
 
     @Test
     void deleteByAgendaId() {
-        doNothing().when(votingSessionRepository).deleteByAgendaId(eq(TEST_ID));
-        doNothing().when(sessionVotesService).deleteByVotingSessionAgendaId(eq(TEST_ID));
+        VotingSession session = generateVotingSession();
+        when(votingSessionRepository.findByAgendaId(TEST_ID)).thenReturn(Optional.of(session));
         votingSessionService.deleteByAgendaId(TEST_ID);
-        verify(votingSessionRepository).deleteByAgendaId(eq(TEST_ID));
-        verify(sessionVotesService).deleteByVotingSessionAgendaId(eq(TEST_ID));
+        verify(voteService).deleteByVotingSessionId(TEST_ID);
+        verify(votingSessionRepository).deleteById(TEST_ID);
     }
 
     @Test
@@ -113,7 +110,7 @@ class VotingSessionServiceTest {
     }
 
     private static Agenda generateAgenda() {
-        return new Agenda().builder()
+        return Agenda.builder()
                 .id(TEST_ID)
                 .title("testTitle")
                 .description("test description")
@@ -121,7 +118,7 @@ class VotingSessionServiceTest {
     }
 
     private static VotingSession generateVotingSession() {
-        return new VotingSession().builder()
+        return  VotingSession.builder()
                 .id(TEST_ID)
                 .agenda(generateAgenda())
                 .start(LocalDateTime.now())

@@ -2,7 +2,7 @@ package com.agendavoting.restClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.agendavoting.DTO.CPFConsultDTO;
+import com.agendavoting.dto.CPFConsultDTO;
 import com.agendavoting.configuration.ApplicationConfig;
 import com.agendavoting.enums.Status;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @ExtendWith(SpringExtension.class)
 @RestClientTest(CPFConsultationClient.class)
 @Import(ApplicationConfig.class)
-public class CPFConsultationClientIT {
+public class CPFConsultationClientTest {
 
     @Autowired
     private CPFConsultationClient cpfConsultationClient;
@@ -56,6 +56,6 @@ public class CPFConsultationClientIT {
 
         Status status = cpfConsultationClient.getStatus(cpf);
         server.verify();
-        assertEquals(cpfConsultDTO.getStatus(), status);
+        assertEquals(cpfConsultDTO.status(), status);
     }
 }

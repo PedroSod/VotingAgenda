@@ -1,213 +1,91 @@
 package com.agendavoting.business;
 
-import com.agendavoting.DTO.VoteDTO;
-import com.agendavoting.DTO.VotingResultDTO;
-import com.agendavoting.DTO.VotingSessionInputDTO;
+import com.agendavoting.dto.VoteDTO;
+import com.agendavoting.dto.VotingResultDTO;
+import com.agendavoting.dto.VotingSessionInputDTO;
 import com.agendavoting.enums.Status;
 import com.agendavoting.enums.VotingOption;
-import com.agendavoting.exception.DuplicateVoteException;
 import com.agendavoting.exception.VotingClosedException;
 import com.agendavoting.model.Agenda;
-import com.agendavoting.model.SessionVotes;
-import com.agendavoting.model.Vote;
 import com.agendavoting.model.VotingSession;
 import com.agendavoting.restClient.CPFConsultationClient;
 import com.agendavoting.service.AgendaService;
-import com.agendavoting.service.SessionVotesService;
+import com.agendavoting.service.VoteService;
 import com.agendavoting.service.VotingSessionService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.modelmapper.ModelMapper;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(SpringExtension.class)
-public class SessionVoteBusinessTest {
-
-    private static VotingSessionService votingSessionService;
-
-    private static AgendaService agendaService;
-
-    private static SessionVotesService sessionVotesService;
-
-    private static CPFConsultationClient cpfConsultationClient;
-
-    private static final String TEST_ID = "testId";
-
-    private static SessionVoteBusiness sessionVoteBusiness;
-
-    @BeforeAll
-    public static void setUp() {
-        agendaService = Mockito.mock(AgendaService.class);
-        sessionVotesService = Mockito.mock(SessionVotesService.class);
-        votingSessionService = Mockito.mock(VotingSessionService.class);
-        cpfConsultationClient = Mockito.mock(CPFConsultationClient.class);
-        sessionVoteBusiness = new SessionVoteBusiness(votingSessionService,
-                agendaService, sessionVotesService, new ModelMapper(), cpfConsultationClient);
-    }
+@ExtendWith(MockitoExtension.class)
+class SessionVoteBusinessTest {
+    @Mock private VotingSessionService votingSessionService;
+    @Mock private AgendaService agendaService;
+    @Mock private VoteService voteService;
+    @Mock private CPFConsultationClient cpfConsultationClient;
+    private SessionVoteBusiness business;
 
     @BeforeEach
-    public void reset() {
-        Mockito.reset(agendaService, sessionVotesService, votingSessionService, cpfConsultationClient);
+    void setUp() {
+        business = new SessionVoteBusiness(votingSessionService, agendaService, voteService, cpfConsultationClient);
     }
 
     @Test
-    public void startVotingSessionIncompleteObject() {
-        VotingSessionInputDTO votingSessionInputDTO = new VotingSessionInputDTO();
-        votingSessionInputDTO.setAgendaId(TEST_ID);
-        Agenda agendaMock = generateAgenda();
-        VotingSession votingSessionMock = generateVotingSession();
+    void startsDefaultOneMinuteSession() {
+        Agenda agenda = Agenda.builder().id("agenda-1").build();
+        when(agendaService.findById("agenda-1")).thenReturn(agenda);
+        when(votingSessionService.save(any())).thenAnswer(invocation -> {
+            VotingSession session = invocation.getArgument(0);
+            session.setId("session-1");
+            return session;
+        });
 
-        when(agendaService.findById(eq(TEST_ID))).thenReturn(agendaMock);
-        when(votingSessionService.save(any(VotingSession.class))).thenReturn(votingSessionMock);
-        assertEquals(TEST_ID, sessionVoteBusiness.startVotingSession(votingSessionInputDTO));
-        verify(agendaService).findById(eq(TEST_ID));
-        verify(votingSessionService).save(any(VotingSession.class));
+        String id = business.startVotingSession(new VotingSessionInputDTO("agenda-1", null, null));
 
+        assertEquals("session-1", id);
+        verify(votingSessionService).save(argThat(session -> session.getAgenda().equals(agenda)
+                && session.getEnd().equals(session.getStart().plusMinutes(1))));
     }
 
     @Test
-    public void startVotingSession() {
-        VotingSessionInputDTO votingSessionInputDTO = generateVotingSessionInputDTO();
-        Agenda agendaMock = generateAgenda();
-        VotingSession votingSessionMock = generateVotingSession();
+    void castsVoteAgainstTheSessionFoundByAgenda() {
+        VoteDTO vote = new VoteDTO("agenda-1", "91693816075", VotingOption.YES);
+        when(cpfConsultationClient.getStatus(vote.cpf())).thenReturn(Status.ABLE_TO_VOTE);
+        when(votingSessionService.findByAgendaId("agenda-1")).thenReturn(openSession());
 
-        when(agendaService.findById(eq(TEST_ID))).thenReturn(agendaMock);
-        when(votingSessionService.save(any(VotingSession.class))).thenReturn(votingSessionMock);
-        assertEquals(TEST_ID, sessionVoteBusiness.startVotingSession(votingSessionInputDTO));
-        verify(agendaService).findById(eq(TEST_ID));
-        verify(votingSessionService).save(any(VotingSession.class));
+        business.toVote(vote);
+
+        verify(voteService).cast("session-1", vote.cpf(), VotingOption.YES);
     }
 
     @Test
-    public void toVoteSuccessTest() {
-        VoteDTO voteDTO = generateVoteDTO();
-        when(cpfConsultationClient.getStatus(eq(voteDTO.getCpf()))).thenReturn(Status.ABLE_TO_VOTE);
+    void rejectsClosedSession() {
+        VoteDTO vote = new VoteDTO("agenda-1", "91693816075", VotingOption.YES);
+        when(cpfConsultationClient.getStatus(vote.cpf())).thenReturn(Status.ABLE_TO_VOTE);
+        VotingSession closed = openSession();
+        closed.setEnd(LocalDateTime.now().minusSeconds(1));
+        when(votingSessionService.findByAgendaId("agenda-1")).thenReturn(closed);
 
-        when(sessionVotesService.existsByIdAndAllSessionVotesCpf(
-                eq(TEST_ID), eq(voteDTO.getCpf()))).thenReturn(false);
-        when(votingSessionService.findEndTime(eq(TEST_ID))).
-                thenReturn(LocalDateTime.now().plusMinutes(60L));
-        doNothing().when(sessionVotesService).pushVote(eq(TEST_ID), any(Vote.class));
-        sessionVoteBusiness.toVote(voteDTO);
-        verify(sessionVotesService).existsByIdAndAllSessionVotesCpf(
-                eq(TEST_ID), eq(voteDTO.getCpf()));
-        verify(votingSessionService).findEndTime(eq(TEST_ID));
-        verify(sessionVotesService).pushVote(eq(TEST_ID), any(Vote.class));
-        verify(cpfConsultationClient).getStatus(eq(voteDTO.getCpf()));
+        assertThrows(VotingClosedException.class, () -> business.toVote(vote));
+        verifyNoInteractions(voteService);
     }
 
     @Test
-    public void toVoteDuplicateVoteExceptionTest() {
-        VoteDTO voteDTO = generateVoteDTO();
-        when(cpfConsultationClient.getStatus(eq(voteDTO.getCpf()))).thenReturn(Status.ABLE_TO_VOTE);
+    void returnsDatabaseCounts() {
+        when(votingSessionService.findByAgendaId("agenda-1")).thenReturn(openSession());
+        when(voteService.countBySessionAndOption("session-1", VotingOption.YES)).thenReturn(3L);
+        when(voteService.countBySessionAndOption("session-1", VotingOption.NO)).thenReturn(2L);
 
-        when(sessionVotesService.existsByIdAndAllSessionVotesCpf(
-                eq(TEST_ID), eq(voteDTO.getCpf()))).thenReturn(true);
-
-        assertThrows(DuplicateVoteException.class, () ->
-                        sessionVoteBusiness.toVote(voteDTO),
-                "the CPF " + voteDTO.getCpf() + ", has already voted on this agenda.");
-        verify(sessionVotesService).existsByIdAndAllSessionVotesCpf(
-                eq(TEST_ID), eq(voteDTO.getCpf()));
+        assertEquals(new VotingResultDTO(3L, 2L, 5L), business.getVotingResult("agenda-1"));
     }
 
-    @Test
-    public void toVoteVotingClosedExceptionTest() {
-        VoteDTO voteDTO = generateVoteDTO();
-        when(cpfConsultationClient.getStatus(eq(voteDTO.getCpf()))).thenReturn(Status.ABLE_TO_VOTE);
-
-        when(sessionVotesService.existsByIdAndAllSessionVotesCpf(
-                eq(TEST_ID), eq(voteDTO.getCpf()))).thenReturn(false);
-
-        when(votingSessionService.findEndTime(eq(TEST_ID))).
-                thenReturn(LocalDateTime.now().minusMinutes(60L));
-
-        assertThrows(VotingClosedException.class, () ->
-                        sessionVoteBusiness.toVote(voteDTO),
-                "The voting session " + TEST_ID + " has ended");
-        verify(sessionVotesService).existsByIdAndAllSessionVotesCpf(
-                eq(TEST_ID), eq(voteDTO.getCpf()));
-        verify(votingSessionService).findEndTime(eq(TEST_ID));
-        verify(cpfConsultationClient).getStatus(eq(voteDTO.getCpf()));
-
-    }
-
-    @Test
-    void getVotingResult() {
-        when(sessionVotesService.findVotesByAgendaId(TEST_ID))
-                .thenReturn(Collections.singletonList(generateVote()));
-
-        VotingResultDTO votingResultDTO = generateVotingResultDTO();
-        VotingResultDTO votingResultDTOReturned = sessionVoteBusiness.getVotingResult(TEST_ID);
-        assertEquals(votingResultDTO, votingResultDTOReturned);
-        verify(sessionVotesService).findVotesByAgendaId(eq(TEST_ID));
-    }
-
-    private static Agenda generateAgenda() {
-        return new Agenda().builder()
-                .id(TEST_ID)
-                .title("testTitle")
-                .description("test description")
-                .build();
-    }
-
-    private static VotingSession generateVotingSession() {
-        return new VotingSession().builder()
-                .id(TEST_ID)
-                .agenda(generateAgenda())
-                .start(LocalDateTime.now())
-                .end(LocalDateTime.now().plusMinutes(60L)).build();
-    }
-
-    private static SessionVotes generateSessionVotes() {
-        return new SessionVotes().builder()
-                .id(TEST_ID)
-                .votingSession(generateVotingSession())
-                .allSessionVotes(Collections.emptyList()).build();
-
-    }
-
-    public static VotingSessionInputDTO generateVotingSessionInputDTO() {
-        return new VotingSessionInputDTO().builder()
-                .agendaId(TEST_ID)
-                .start(LocalDateTime.now())
-                .timeDuration(60L)
-                .build();
-    }
-
-    public static VoteDTO generateVoteDTO() {
-        return new VoteDTO().builder()
-                .agendaId(TEST_ID)
-                .cpf("91693816075")
-                .votingOption(VotingOption.YES)
-                .build();
-    }
-
-    private static Vote generateVote() {
-        return new Vote().builder()
-                .cpf("91693816075")
-                .votingOption(VotingOption.YES)
-                .build();
-    }
-
-    private static VotingResultDTO generateVotingResultDTO() {
-        return new VotingResultDTO()
-                .builder()
-                .yesVotes(1L)
-                .noVotes(0L)
-                .totalVotes(1L)
-                .build();
+    private VotingSession openSession() {
+        return VotingSession.builder().id("session-1").end(LocalDateTime.now().plusMinutes(1)).build();
     }
 }

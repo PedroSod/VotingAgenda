@@ -1,14 +1,28 @@
-mongo:
-  image: mongo:latest
-  restart: always
-  volumes:
-    - database:/data/db
-  ports:
-    - "27017:27017"
-app:
-  build: .
-  dockerfile: Dockerfile
-  ports:
-    - "8085:8080"
-  links:
-    - mongo
+services:
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    volumes:
+      - database:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/agendaVoting
+    ports:
+      - "8085:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  database:

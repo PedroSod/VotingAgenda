@@ -1,13 +1,10 @@
 spring:
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: agendaVoting
-  mvc:
-    locale: en_US
+      uri: ${MONGODB_URI:mongodb://localhost:27017/agendaVoting}
+      auto-index-creation: true
 logging:
   level:
-    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+    org.springframework.data.mongodb.core.MongoTemplate: INFO
 cpf-consult:
-  url: https://user-info.herokuapp.com/users/
+  url: ${CPF_CONSULT_URL:https://user-info.herokuapp.com/users/}

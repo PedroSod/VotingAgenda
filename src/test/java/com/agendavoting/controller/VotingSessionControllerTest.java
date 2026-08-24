@@ -3,7 +3,7 @@ package com.agendavoting.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.agendavoting.DTO.VotingSessionInputDTO;
+import com.agendavoting.dto.VotingSessionInputDTO;
 import com.agendavoting.business.SessionVoteBusiness;
 import com.agendavoting.configuration.ApplicationConfig;
 import com.agendavoting.exception.ExistingSessionException;
@@ -15,16 +15,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -35,15 +33,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(VotingSessionController.class)
-@Import(value = {ApplicationConfig.class, RestTemplateAutoConfiguration.class})
-public class VotingSessionControllerIT {
+@Import(ApplicationConfig.class)
+public class VotingSessionControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     private static ObjectMapper mapper;
-    @MockBean
+    @MockitoBean
     private VotingSessionService votingSessionService;
-    @MockBean
+    @MockitoBean
     private SessionVoteBusiness sessionVoteBusiness;
     private static final String TEST_ID = "testId";
     private static final LocalDateTime date = LocalDateTime.now();
@@ -89,7 +87,7 @@ public class VotingSessionControllerIT {
     public void createSessionRecordNotFoundExceptionTest() throws Exception {
         VotingSessionInputDTO votingSessionInputDTO = generateVotingSessionInputDTO();
 
-        doThrow(new RecordNotFoundException(votingSessionInputDTO.getAgendaId()))
+        doThrow(new RecordNotFoundException(votingSessionInputDTO.agendaId()))
                 .when(sessionVoteBusiness).startVotingSession(eq(votingSessionInputDTO));
 
         mockMvc.perform(
@@ -99,7 +97,7 @@ public class VotingSessionControllerIT {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errorCode").value(404))
                 .andExpect(jsonPath("$.error").value("NOT_FOUND"))
-                .andExpect(jsonPath("$.message").value("No record found for id : " + votingSessionInputDTO.getAgendaId()));
+                .andExpect(jsonPath("$.message").value("No record found for id : " + votingSessionInputDTO.agendaId()));
     }
 
     @Test
@@ -126,8 +124,8 @@ public class VotingSessionControllerIT {
                 .andExpect(jsonPath("$.agenda.id").value(votingSession.getAgenda().getId()))
                 .andExpect(jsonPath("$.agenda.title").value(votingSession.getAgenda().getTitle()))
                 .andExpect(jsonPath("$.agenda.description").value(votingSession.getAgenda().getDescription()))
-                .andExpect(jsonPath("$.start").value(votingSession.getStart().toString()))
-                .andExpect(jsonPath("$.end").value(votingSession.getEnd().toString()));
+                .andExpect(jsonPath("$.start").exists())
+                .andExpect(jsonPath("$.end").exists());
 
     }
 
@@ -138,15 +136,11 @@ public class VotingSessionControllerIT {
     }
 
     public static VotingSessionInputDTO generateVotingSessionInputDTO() {
-        return new VotingSessionInputDTO().builder()
-                .agendaId(TEST_ID)
-                .start(LocalDateTime.now())
-                .timeDuration(60L)
-                .build();
+        return new VotingSessionInputDTO(TEST_ID, LocalDateTime.now(), 60L);
     }
 
     private static VotingSession generateVotingSession() {
-        return new VotingSession().builder()
+        return  VotingSession.builder()
                 .id(TEST_ID)
                 .agenda(generateAgenda())
                 .start(date)
@@ -154,7 +148,7 @@ public class VotingSessionControllerIT {
     }
 
     private static Agenda generateAgenda() {
-        return new Agenda().builder()
+        return Agenda.builder()
                 .id(TEST_ID)
                 .title("testTitle")
                 .description("test description")

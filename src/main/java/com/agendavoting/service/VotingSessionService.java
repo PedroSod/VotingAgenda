@@ -6,17 +6,15 @@ import com.agendavoting.model.VotingSession;
 import com.agendavoting.repository.VotingSessionRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 @Service
 public class VotingSessionService {
 
     private final VotingSessionRepository votingSessionRepository;
-    private final SessionVotesService sessionVotesService;
+    private final VoteService voteService;
 
-    public VotingSessionService(VotingSessionRepository votingSessionRepository, SessionVotesService sessionVotesRepository) {
+    public VotingSessionService(VotingSessionRepository votingSessionRepository, VoteService voteService) {
         this.votingSessionRepository = votingSessionRepository;
-        this.sessionVotesService = sessionVotesRepository;
+        this.voteService = voteService;
     }
 
     public VotingSession save(VotingSession votingSession) {
@@ -31,21 +29,23 @@ public class VotingSessionService {
                 orElseThrow(() -> new RecordNotFoundException(id));
     }
 
-    public LocalDateTime findEndTime(String id) {
-        VotingSession votingSession = votingSessionRepository.findEndById(id).
-                orElseThrow(() -> new RecordNotFoundException(id));
-        return votingSession.getEnd();
+    public VotingSession findByAgendaId(String agendaId) {
+        return votingSessionRepository.findByAgendaId(agendaId)
+                .orElseThrow(() -> new RecordNotFoundException(agendaId));
     }
 
     public void delete(String id) {
+        findById(id);
+        voteService.deleteByVotingSessionId(id);
         votingSessionRepository.deleteById(id);
-        sessionVotesService.deleteByVotingSessionId(id);
     }
 
 
     public void deleteByAgendaId(String id) {
-        votingSessionRepository.deleteByAgendaId(id);
-        sessionVotesService.deleteByVotingSessionAgendaId(id);
+        votingSessionRepository.findByAgendaId(id).ifPresent(session -> {
+            voteService.deleteByVotingSessionId(session.getId());
+            votingSessionRepository.deleteById(session.getId());
+        });
     }
 
     public boolean existsByAgendaId(String id) {
